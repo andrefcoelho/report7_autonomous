@@ -2,7 +2,7 @@ clear
 close all
 
 %Options
-opt=2;    %measurement models: 1-feature based known correspondences 2-unknown correspondences
+opt=1;    %measurement models: 1-feature based known correspondences 2-unknown correspondences
 
 
 %% Create Movie
@@ -11,7 +11,7 @@ create_mov  = false;
 if opt==1
     mov_name    = 'grid_loc_known.avi';
 else
-    mov_name    = 'grid_loc_known.avi';
+    mov_name    = 'grid_loc_unknown.avi';
 end
 fps         = 2;
 
@@ -45,6 +45,7 @@ y=linspace(-10,10,M);
 phi=linspace(-pi,pi,M);
 phi=Zi(3);
 index=0;
+X=zeros(3,M^2);
 for k=1:1%M
     for j=1:M
         for i=1:M
