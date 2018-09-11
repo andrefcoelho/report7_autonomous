@@ -22,8 +22,8 @@ Ui=[0 0];
 Sigma=[1000 10 10;10 1000 10;10 10 1000];  %model uncertatinty
 R=[1.5 0.001 0.01;0.001 1.5 0.001;0.01 0.001 1.5];  %measurement uncertainty
 Z=Zi;
-U=[1 0.1;1 0.1;1 0.1;1 0.1;1 0.1;1 0.1; 1 0.1];  %[v w] 
-U=[U; U]*5;
+U=[1 1;0 1;1 0;2 4;5 0;1 0; 1 -1];  %[v w] 
+% U=[U; U];
 %% Generate Initial Grid
 M=21;
 x=linspace(-10,10,M);
@@ -109,7 +109,7 @@ for n=1:size(U,1)
     
     %     Z = diff_drive(Z,U(n,:),dt);
     
-    Z=unicycle(U(n,:),Z',dt);
+    Z=unicycle(v,w,Z',dt);
     for j=1:M
         for i=1:M
             index=(j-1)*M+i;
@@ -122,7 +122,7 @@ for n=1:size(U,1)
     for i=1:length(Pxy)
 %         mu1 = diff_drive(X(:,i),U(n,:),dt);
 %         mu1=unicycle(v,w,X(:,i)',dt);
-        mu1 = unicycle_model(X(:,i),U(n,:),dt);
+        mu1 = unicycle_model(X(:,i),[v,w],dt);
         for j=1:length(Pxy)
             Pxy_new(j) = Pxy_new(j)+gaussian_multi(Xxy(:,j),mu1(1:2),Sigma(1:2,1:2));
         end

@@ -1,8 +1,4 @@
-Dfunction X_new = diff_drive(X,U,dt)
-%DIFF_DRIVE state transition model for differential drive robots
-% U=[vl vr] control input - Velocities of the left wheel and right wheel,respectively
-% X=[x y phi] state vector - [x,y] position and heading (phi) of the robot
-% Ts sampling time 
+function X_new = unicycle_model(X,U,dt)
 
 %Parameters
 R=1; %m
@@ -14,8 +10,12 @@ y=X(2);
 phi=X(3);
 
 %Control Inputs
-vl=U(1);
-vr=U(2);
+v=U(1);
+w=U(2);
+
+%Actual controls
+vr=(2*v+w*L)/(2*R);
+vl=(2*v-w*L)/(2*R);
 
 % State Transition Model
 x_dot   = R/2*(vr+vl)*cos(phi);
@@ -26,7 +26,7 @@ phi_dot = R/L*(vr-vl);
 x_new   = x   + dt*x_dot;
 y_new   = y   + dt*y_dot;
 phi_new = phi + dt*phi_dot;
-
+phi_new=wrapToPi(phi_new);
 X_new=[x_new y_new phi_new]';
 end
 
