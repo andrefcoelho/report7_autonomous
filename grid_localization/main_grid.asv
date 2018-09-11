@@ -2,7 +2,7 @@ clear
 close all
 
 %Options
-opt=2;    %measurement models: 1-feature based known correspondences 2-unknown correspondences
+opt=1;    %measurement models: 1-feature based known correspondences 2-unknown correspondences
 kid=0;    %kidnapped robot?
 
 %% Create Movie
@@ -160,10 +160,10 @@ for n=1:size(U,1)
     Pxy_new=zeros(size(Pxy));
     
     for i=1:length(Pxy)
-                mu1 = unicycle_model([X(1:2,i);phi_old],U(n,:),dt);
+        %         mu1 = unicycle_model([X(1:2,i);phi_old],U(n,:),dt);
         for j=1:length(Pxy)
 %             Pxy_new(j) = Pxy_new(j)+Pxy(i)*velocity(Xxy(:,j),Xxy(:,i),U(n,1),U(n,2),dt);
-            Pxy_new(j) = Pxy_new(j)+Pxy(i)*odometry([Xxy(:,j);Z(3)],[Xxy(:,i);phi_old],mu1,[Xxy(:,i);phi_old]); 
+            Pxy_new(j) = Pxy_new(j)+Pxy(i)*odometry(X,X_old,Xbar,Xbar_old) velocity(,U(n,1),U(n,2),dt);
             
             %             Pxy_new(j) = Pxy_new(j)+Pxy(i)*gaussian_multi(Xxy(:,j),mu1(1:2),Sigma(1:2,1:2));
         end
