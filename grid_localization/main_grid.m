@@ -18,12 +18,18 @@ end
 dt=0.1;
 Zi=[0 0 0]';        %[x y phi];
 Ui=[0 0];
+L(:,1)=[-10 10];
+L(:,2)=[-10 -10];
+L(:,3)=[10 -10];
+L(:,4)=[10 10];
+col=[0 0 1;1 0 1;1 1 0;1 0 0];
+
 
 Sigma=[1000 10 10;10 1000 10;10 10 1000];  %model uncertatinty
 R=[1.5 0.001 0.01;0.001 1.5 0.001;0.01 0.001 1.5];  %measurement uncertainty
 Z=Zi;
-U=[1 0.1;1 0.1;1 0.1;1 0.1;1 0.1;1 0.1; 1 0.1];  %[v w] 
-U=[U; U]*5;
+U=[3 0.1;3 0.1;3 0.1;3 0.1;3 0.1;3 0.1; 3 0.1];  %[v w]
+U=[U; U]*1;
 %% Generate Initial Grid
 M=21;
 x=linspace(-10,10,M);
@@ -49,6 +55,7 @@ Pxy=Pxy/sum(sum(Pxy));
 figure(1)
 xlim([-12 12])
 ylim([-12 12])
+
 for j=1:M
     for i=1:M
         c=(1-Pxy(M*(j-1)+i)/max(Pxy));
@@ -57,7 +64,8 @@ for j=1:M
         hold on
     end
 end
-scatter(Z(1,1),Z(2,1),100,'filled','g')
+scatter(L(1,:),L(2,:),100,col,'filled')
+scatter(Z(1,1),Z(2,1),200,'filled','g')
 hold off
 pause(0.2)
 
@@ -73,12 +81,16 @@ for n=1:size(U,1)
     Pxy_prev=Pxy;
     Pxy_new=zeros(size(Pxy));
     
+    m = sense_unknown_landmark(L,Z(1:2));
     %%%%%%%%%%%%%%%%%%%%%%%measure%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for j=1:M
         for i=1:M
             index=(j-1)*M+i;
+            m_hat = sense_unknown_landmark_clean(L,Xxy(:,index));
             %         Xxy(:,index)=[x(i);y(j);phi(k)];
-            Pxy_new(index) = gaussian_multi(Xxy(:,index),Z(1:2),R(1:2,1:2));
+            for k=1:size(L,2)
+                Pxy_new(index) = Pxy_new(index)+ gaussian_multi(m_hat(k,:)',m(k,:)',R(1:2,1:2));
+            end
         end
     end
     Pxy=Pxy_new.*Pxy_prev;
@@ -93,7 +105,8 @@ for n=1:size(U,1)
             hold on
         end
     end
-    scatter(Z(1,1),Z(2,1),100,'filled','g')
+    scatter(L(1,:),L(2,:),100,col,'filled')
+    scatter(Z(1,1),Z(2,1),200,'filled','g')
     hold off
     pause(0.2)
     if (create_mov == true)
@@ -120,8 +133,8 @@ for n=1:size(U,1)
     Pxy_new=zeros(size(Pxy));
     
     for i=1:length(Pxy)
-%         mu1 = diff_drive(X(:,i),U(n,:),dt);
-%         mu1=unicycle(v,w,X(:,i)',dt);
+        %         mu1 = diff_drive(X(:,i),U(n,:),dt);
+        %         mu1=unicycle(v,w,X(:,i)',dt);
         mu1 = unicycle_model(X(:,i),U(n,:),dt);
         for j=1:length(Pxy)
             Pxy_new(j) = Pxy_new(j)+gaussian_multi(Xxy(:,j),mu1(1:2),Sigma(1:2,1:2));
@@ -140,7 +153,8 @@ for n=1:size(U,1)
             hold on
         end
     end
-    scatter(Z(1,1),Z(2,1),100,'filled','g')
+    scatter(L(1,:),L(2,:),100,col,'filled')
+    scatter(Z(1,1),Z(2,1),200,'filled','g')
     hold off
     pause(0.2)
     if (create_mov == true)
