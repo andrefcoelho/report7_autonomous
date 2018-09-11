@@ -1,10 +1,18 @@
 clear
 close all
 
+%Options
+opt=2;    %measurement models: 1-feature based known correspondences 2-unknown correspondences
+
+
 %% Create Movie
 % create a movie from plot
 create_mov  = false;
-mov_name    = 'grid_loc.avi';
+if opt==1
+    mov_name    = 'grid_loc_known.avi';
+else
+    mov_name    = 'grid_loc_known.avi';
+end
 fps         = 2;
 
 if (create_mov == true)
@@ -25,18 +33,19 @@ L(:,4)=[10 10];
 col=[0 0 1;1 0 1;1 1 0;1 0 0];
 
 
-Sigma=[1000 10 10;10 1000 10;10 10 1000];  %model uncertatinty
-R=[1.5 0.001 0.01;0.001 1.5 0.001;0.01 0.001 1.5];  %measurement uncertainty
+Sigma=[10 0.1;0.1 10]*0.1;  %model uncertainty
+R=[1.5 0.001 0.01;0.001 1.5 0.001;0.01 0.001 1.5]*0.5;  %measurement uncertainty
 Z=Zi;
-U=[3 0.1;3 0.1;3 0.1;3 0.1;3 0.1;3 0.1; 3 0.1];  %[v w]
-U=[U; U]*1;
+U=[3 0.5;3 0.5;3 0.5;3 0.5;3 0.5;3 0.5; 3 0.5];  %[v w]
+U=[U; U]*2;
 %% Generate Initial Grid
 M=21;
 x=linspace(-10,10,M);
 y=linspace(-10,10,M);
 phi=linspace(-pi,pi,M);
+phi=Zi(3);
 index=0;
-for k=1:M
+for k=1:1%M
     for j=1:M
         for i=1:M
             index=index+1;
@@ -81,18 +90,31 @@ for n=1:size(U,1)
     Pxy_prev=Pxy;
     Pxy_new=zeros(size(Pxy));
     
+    
+    %%%%%%%%%%%%%%%%%%%%%%    measure   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     m = sense_unknown_landmark(L,Z(1:2));
-    %%%%%%%%%%%%%%%%%%%%%%%measure%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for j=1:M
         for i=1:M
             index=(j-1)*M+i;
             m_hat = sense_unknown_landmark_clean(L,Xxy(:,index));
             %         Xxy(:,index)=[x(i);y(j);phi(k)];
-            for k=1:size(L,2)
-                Pxy_new(index) = Pxy_new(index)+ gaussian_multi(m_hat(k,:)',m(k,:)',R(1:2,1:2));
+            if opt==1
+                for k=1:size(L,2)
+                    Pxy_new(index) = Pxy_new(index) + gaussian_multi(m_hat(k,:)',m(k,:)',R(1:2,1:2));
+                end
+            else
+                prob_land=zeros(size(L,2),1);
+                for k=1:size(L,2)
+                    for l=1:size(L,2)
+                        prob_land(l) = prob_land(l)+gaussian_multi(m_hat(l,:)',m(k,:)',R(1:2,1:2));
+                    end
+                    Pxy_new(index) =Pxy_new(index) + max(prob_land);
+                end
             end
         end
     end
+    Pxy_new=Pxy_new/sum(sum(Pxy_new));
     Pxy=Pxy_new.*Pxy_prev;
     Pxy=Pxy/sum(sum(Pxy));
     
@@ -118,31 +140,30 @@ for n=1:size(U,1)
     
     
     
-    %%%%%%%%%%%%%%%%%%%%%%% drive %%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%   drive    %%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %     Z = diff_drive(Z,U(n,:),dt);
-    
+    phi_old=Z(3);
     Z=unicycle(U(n,:),Z',dt);
-    for j=1:M
-        for i=1:M
-            index=(j-1)*M+i;
-            %         Xxy(:,index)=[x(i);y(j);phi(k)];
-            Pxy_prev(index) = gaussian_multi(Xxy(:,index),Z(1:2),R(1:2,1:2));
-        end
-    end
+    %     for j=1:M
+    %         for i=1:M
+    %             index=(j-1)*M+i;
+    %             %         Xxy(:,index)=[x(i);y(j);phi(k)];
+    %             Pxy_prev(index) = gaussian_multi(Xxy(:,index),Z(1:2),R(1:2,1:2));
+    %         end
+    %     end
+    
     Pxy_new=zeros(size(Pxy));
     
     for i=1:length(Pxy)
-        %         mu1 = diff_drive(X(:,i),U(n,:),dt);
-        %         mu1=unicycle(v,w,X(:,i)',dt);
-        mu1 = unicycle_model(X(:,i),U(n,:),dt);
+        mu1 = unicycle_model([X(1:2,i);phi_old],U(n,:),dt);
         for j=1:length(Pxy)
-            Pxy_new(j) = Pxy_new(j)+gaussian_multi(Xxy(:,j),mu1(1:2),Sigma(1:2,1:2));
+            Pxy_new(j) = Pxy_new(j)+Pxy(i)*gaussian_multi(Xxy(:,j),mu1(1:2),Sigma(1:2,1:2));
         end
     end
     
-    
-    Pxy=Pxy_new.*Pxy_prev;
+    Pxy_new=Pxy_new/sum(sum(Pxy_new));
+    Pxy=Pxy_new;%.*Pxy_prev; %%%%%%%%%%%%%
     Pxy=Pxy/sum(sum(Pxy));
     
     for j=1:M
