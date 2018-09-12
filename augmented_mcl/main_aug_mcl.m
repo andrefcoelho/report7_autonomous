@@ -6,7 +6,7 @@ kid=1;
 
 %% Create Movie
 % create a movie from plot
-create_mov  = false;
+create_mov  = true;
 if opt==1
     mov_name    = 'aug_mcl.avi';
 else
@@ -89,7 +89,7 @@ for n=1:size(U,1)
     scatter(L(1,:),L(2,:),100,col,'filled')
     scatter(Z(1,1),Z(2,1),200,'filled','g')
     hold off
-    pause(1)
+    pause(0.2)
     
     if (create_mov == true)
         for i=1:fps
@@ -153,7 +153,7 @@ for n=1:size(U,1)
     scatter(L(1,:),L(2,:),100,col,'filled')
     scatter(Z(1,1),Z(2,1),200,'filled','g')
     hold off
-    pause(1)
+    pause(0.2)
     
     if (create_mov == true)
         for i=1:fps
@@ -163,7 +163,12 @@ for n=1:size(U,1)
     end
     
 end
-
+if (create_mov == true)
+        for i=1:5*fps
+            F = getframe(gcf);
+            writeVideo(mov,F);
+        end
+end
 if (create_mov == true)
     close(mov);
     %     close all;
