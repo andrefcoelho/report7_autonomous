@@ -5,7 +5,7 @@ opt=1;
 
 %% Create Movie
 % create a movie from plot
-create_mov  = true;
+create_mov  = false;
 if opt==1
     mov_name    = 'mcl_known.avi';
 else
