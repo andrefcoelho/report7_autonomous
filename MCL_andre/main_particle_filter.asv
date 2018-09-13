@@ -1,16 +1,15 @@
 clear
 close all
-%Options
+
 opt=1;
-kid=1;
 
 %% Create Movie
 % create a movie from plot
 create_mov  = false;
 if opt==1
-    mov_name    = 'aug_mcl.avi';
+    mov_name    = 'mcl_known.avi';
 else
-    mov_name    = 'aug_mcl_unknown.avi';
+    mov_name    = 'mcl_unknown.avi';
 end
 fps         = 2;
 
@@ -30,16 +29,14 @@ L(:,2)=[-10 -10];
 L(:,3)=[10 -10];
 L(:,4)=[10 10];
 col=[0 0 1;1 0 1;1 1 0;1 0 0];
-alpha_s=0.002;
-alpha_f=1.5%6;
-wslow=0;
-wfast=0;
+
+
 Sigma=[10 0.1;0.1 10]*0.1;  %model uncertainty
 R=[0.5 0 0;0 0.1 0;0 0 0.3];  %measurement uncertainty
 Z=Zi;
 U=[3 0.5;3 0.5;3 0.5;3 0.5;3 0.5];  %[v w]
-U=[U;U;U;U;U]*4;%% Generate Initial Particles
-M=770;
+U=[U;U;U]*4;%% Generate Initial Particles
+M=1000;
 X=zeros(length(Z),M);
 P=zeros(M,1);
 for i=1:M
@@ -55,7 +52,7 @@ grid on
 scatter(L(1,:),L(2,:),100,col,'filled')
 scatter(Z(1,1),Z(2,1),200,'filled','g')
 hold off
-pause(0.1)
+pause()
 
 if (create_mov == true)
     for i=1:fps
@@ -76,10 +73,6 @@ for n=1:size(U,1)
     Z=unicycle(U(n,:),Z',dt);
     
     
-    if kid==1 && n==15 
-        Z=[8 -2 0.3*pi]';            %kidnapped robot
-    end
-    
     %plot
     plot(X(1,:),X(2,:),'.k')
     xlim([-10 10])
@@ -89,7 +82,7 @@ for n=1:size(U,1)
     scatter(L(1,:),L(2,:),100,col,'filled')
     scatter(Z(1,1),Z(2,1),200,'filled','g')
     hold off
-    pause(0.1)
+    pause(1)
     
     if (create_mov == true)
         for i=1:fps
@@ -129,19 +122,7 @@ for n=1:size(U,1)
         P1(j) = gaussian_multi(X(:,j),Z,R);  %check probabilities
     end
     %     P=P1./sum(P1).*P./sum(P);
-    Wavg=1/M*sum(P)
     W=P./sum(P);  % adjust weights
-    wslow=wslow+alpha_s*(Wavg-wslow)
-    wfast=wfast+alpha_f*(Wavg-wfast)
-    p_rand=max(3/M,1-wfast/wslow)
-    p_rand=min(0.7,p_rand)
-
-   
-    for g=1:round(p_rand*M)
-        W(M+g)=p_rand;
-        X(:,M+g)=[rand(1)*20-10 rand(1)*20-10 rand(1)*2*pi-pi]';
-    end
-    W=W./sum(W);
     X = low_variance_sampler(X,W); % resample
     %    %plot
     plot(X(1,:),X(2,:),'.k')
@@ -152,7 +133,7 @@ for n=1:size(U,1)
     scatter(L(1,:),L(2,:),100,col,'filled')
     scatter(Z(1,1),Z(2,1),200,'filled','g')
     hold off
-    pause(0.1)
+    pause(1)
     
     if (create_mov == true)
         for i=1:fps
@@ -162,12 +143,7 @@ for n=1:size(U,1)
     end
     
 end
-if (create_mov == true)
-        for i=1:5*fps
-            F = getframe(gcf);
-            writeVideo(mov,F);
-        end
-end
+
 if (create_mov == true)
     close(mov);
     %     close all;

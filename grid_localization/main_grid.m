@@ -7,7 +7,7 @@ kid=0;    %kidnapped robot?
 
 %% Create Movie
 % create a movie from plot
-create_mov  = true;
+create_mov  = false;
 if opt==1
     mov_name    = 'grid_loc_known.avi';
 else
@@ -77,7 +77,7 @@ end
 scatter(L(1,:),L(2,:),100,col,'filled')
 scatter(Z(1,1),Z(2,1),200,'filled','g')
 hold off
-% pause(0.2)
+% pause()
 
 if (create_mov == true)
     for i=1:fps
@@ -134,7 +134,7 @@ for n=1:size(U,1)
     scatter(L(1,:),L(2,:),100,col,'filled')
     scatter(Z(1,1),Z(2,1),200,'filled','g')
     hold off
-    %     pause(0.2)
+%     pause()
     if (create_mov == true)
         for i=1:fps
             F = getframe(gcf);
@@ -184,7 +184,7 @@ for n=1:size(U,1)
         scatter(L(1,:),L(2,:),100,col,'filled')
         scatter(Z(1,1),Z(2,1),200,'filled','g')
         hold off
-        %     pause(0.2)
+%         pause()
         
         if (create_mov == true)
             for i=1:fps

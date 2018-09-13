@@ -52,7 +52,7 @@ grid on
 scatter(L(1,:),L(2,:),100,col,'filled')
 scatter(Z(1,1),Z(2,1),200,'filled','g')
 hold off
-pause(1)
+pause()
 
 if (create_mov == true)
     for i=1:fps
@@ -82,7 +82,7 @@ for n=1:size(U,1)
     scatter(L(1,:),L(2,:),100,col,'filled')
     scatter(Z(1,1),Z(2,1),200,'filled','g')
     hold off
-    pause(1)
+    pause(0.1)
     
     if (create_mov == true)
         for i=1:fps
@@ -133,7 +133,7 @@ for n=1:size(U,1)
     scatter(L(1,:),L(2,:),100,col,'filled')
     scatter(Z(1,1),Z(2,1),200,'filled','g')
     hold off
-    pause(1)
+    pause(0.1)
     
     if (create_mov == true)
         for i=1:fps
