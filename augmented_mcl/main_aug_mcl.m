@@ -6,11 +6,11 @@ kid=1;
 
 %% Create Movie
 % create a movie from plot
-create_mov  = true;
+create_mov  = false;
 if opt==1
     mov_name    = 'aug_mcl.avi';
 else
-    mov_name    = 'mcl_unknown.avi';
+    mov_name    = 'aug_mcl_unknown.avi';
 end
 fps         = 2;
 
